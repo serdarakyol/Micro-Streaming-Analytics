@@ -1,0 +1,22 @@
+{"properties": [
+  {
+    "name": "rabbitmq.queue.name",
+    "type": "java.lang.String",
+    "description": "Queue name to subscribe"
+  },
+  {
+    "name": "rabbitmq.exchange.name",
+    "type": "java.lang.String",
+    "description": "Exchange name"
+  },
+  {
+    "name": "rabbitmq.routing.key",
+    "type": "java.lang.String",
+    "description": "Routing key"
+  },
+  {
+    "name": "rabbitmq.pooling.time",
+    "type": "java.lang.String",
+    "description": "Pooling time in miliseconds for RabbitMQ"
+  }
+]}
