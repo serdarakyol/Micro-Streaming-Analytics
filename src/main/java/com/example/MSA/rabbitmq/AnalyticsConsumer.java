@@ -7,9 +7,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
@@ -32,7 +29,6 @@ public class AnalyticsConsumer {
     private final StatisticRepository statisticRepository;
     private List<DataRecordDTO> dataRecordBatch;
     private Timer timer;
-    private ExecutorService executorService;
 
     public AnalyticsConsumer(@Value("${rabbitmq.pooling.time}") String poolingTime,
             StatisticRepository statisticRepository) {
@@ -41,7 +37,6 @@ public class AnalyticsConsumer {
         this.statisticRepository = statisticRepository;
         this.dataRecordBatch = new ArrayList<>();
         this.timer = new Timer();
-        this.executorService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
         this.poolStatistics();
     }
 
@@ -62,7 +57,6 @@ public class AnalyticsConsumer {
             public void run() {
                 calculateStatistics();
                 dataRecordBatch.clear();
-                executorService.shutdown();
                 System.out.println(poolingTime.toString().concat(" seconds have passed. Resetting timer..."));
             }
         };
@@ -96,20 +90,15 @@ public class AnalyticsConsumer {
     }
 
     private double calculateAverage(double[] values) {
-        try {
-            return executorService.submit(() -> Arrays.stream(values).average().orElse(Double.NaN)).get();
-        } catch (InterruptedException | ExecutionException e) {
-            log.error("Concurrency error: {}", e.toString());
-            return Double.NaN;
-        } //Arrays.stream(values).parallel().average().orElse(Double.NaN);
+        return Arrays.stream(values).average().orElse(Double.NaN);
     }
 
     private double findMax(double[] values) {
-        return Arrays.stream(values).parallel().max().orElse(Double.NaN);
+        return Arrays.stream(values).max().orElse(Double.NaN);
     }
 
     private double findMin(double[] values) {
-        return Arrays.stream(values).parallel().min().orElse(Double.NaN);
+        return Arrays.stream(values).min().orElse(Double.NaN);
     }
 
     private double calculateMedian(double[] values) {
@@ -133,9 +122,8 @@ public class AnalyticsConsumer {
     }
 
     private double calculateStandardDeviation(double[] values) {
-        double mean = Arrays.stream(values).parallel().average().orElse(Double.NaN);
+        double mean = Arrays.stream(values).average().orElse(Double.NaN);
         double variance = Arrays.stream(values)
-                .parallel()
                 .map(x -> Math.pow(x - mean, 2))
                 .average()
                 .orElse(Double.NaN);
