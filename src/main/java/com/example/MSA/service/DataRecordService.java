@@ -4,4 +4,5 @@ import com.example.MSA.dto.DataRecordDTO;
 
 public interface DataRecordService {
     void saveDataRecord(DataRecordDTO dataRecordDTO);
+    void addDataRecordToQueue(DataRecordDTO dataRecordDTO);
 }
