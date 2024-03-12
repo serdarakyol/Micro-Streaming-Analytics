@@ -17,7 +17,7 @@ public class AnalyticsProducer {
     private RabbitTemplate rabbitTemplate;
     private final ObjectMapper objectMapper;
 
-    public void sendMessage(DataRecordDTO message) {
+    public void sendMessageToAnalytics(DataRecordDTO message) {
         try {
             log.info("Message arrive to producer: {}", message.toString());
             String json = objectMapper.writeValueAsString(message);

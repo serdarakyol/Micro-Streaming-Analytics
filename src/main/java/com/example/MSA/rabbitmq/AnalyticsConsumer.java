@@ -57,7 +57,7 @@ public class AnalyticsConsumer {
             public void run() {
                 calculateStatistics();
                 dataRecordBatch.clear();
-                System.out.println(poolingTime.toString().concat(" seconds have passed. Resetting timer..."));
+                log.info("Resetting timer --> ".concat(Instant.now().toString()));
             }
         };
         timer.scheduleAtFixedRate(task, 0, poolingTime);
@@ -66,27 +66,17 @@ public class AnalyticsConsumer {
     private void calculateStatistics() {
         double[] values = dataRecordBatch.stream().flatMap(dr -> dr.datastreams().stream())
                 .flatMap(ds -> ds.datapoints().stream()).mapToDouble(dp -> dp.value()).toArray();
-
+        Arrays.parallelSort(values);
         if (values.length == 0) {
             return;
         }
         Statistic statistics = Statistic.builder().average(calculateAverage(values)).max(findMax(values))
                 .min(findMin(values)).median(calculateMedian(values)).mode(calculateMode(values))
-                .standardDeviation(calculateStandardDeviation(values)).firstQuartile(calculateQuartile(1, values))
-                .secondQuartile(calculateQuartile(2, values)).thirdQuartile(calculateQuartile(3, values))
+                .standardDeviation(calculateStandardDeviation(values)).firstQuartile(calculateFirstQuartile(values))
+                .secondQuartile(calculateSecondQuartile(values)).thirdQuartile(calculateThirdQuartile(values))
                 .createAt(Instant.now()).build();
 
         statisticRepository.save(statistics);
-        log.info("average: {}", statistics.getAverage());
-        log.info("findMax: {}", statistics.getMax());
-        log.info("findMin: {}", statistics.getMin());
-        log.info("calculateMedian: {}", statistics.getMedian());
-        log.info("calculateMode: {}", statistics.getMode());
-        log.info("calculateStandardDeviation: {}", statistics.getStandardDeviation());
-        log.info("calculateQuartile1: {}", statistics.getFirstQuartile());
-        log.info("calculateQuartile2: {}", statistics.getSecondQuartile());
-        log.info("calculateQuartile3: {}", statistics.getThirdQuartile());
-        log.info("Create AT: {}", statistics.getCreateAt().toString());
     }
 
     private double calculateAverage(double[] values) {
@@ -102,13 +92,8 @@ public class AnalyticsConsumer {
     }
 
     private double calculateMedian(double[] values) {
-        Arrays.parallelSort(values);
         int middle = values.length / 2;
-        if (values.length % 2 == 0) {
-            return (values[middle - 1] + values[middle]) / 2.0;
-        } else {
-            return values[middle];
-        }
+        return values.length % 2 == 0 ? (values[middle - 1] + values[middle]) / 2.0 : values[middle];
     }
 
     private double calculateMode(double[] values) {
@@ -122,7 +107,7 @@ public class AnalyticsConsumer {
     }
 
     private double calculateStandardDeviation(double[] values) {
-        double mean = Arrays.stream(values).average().orElse(Double.NaN);
+        double mean = this.calculateAverage(values);
         double variance = Arrays.stream(values)
                 .map(x -> Math.pow(x - mean, 2))
                 .average()
@@ -130,8 +115,19 @@ public class AnalyticsConsumer {
         return Math.sqrt(variance);
     }
 
-    private double calculateQuartile(int quartile, double[] values) {
-        int index = (int) ((quartile / 4.0) * (values.length + 1));
-        return values[index];
+    private double calculateFirstQuartile(double[] values) {
+        double median = this.calculateMedian(values);
+        double[] firstQuartileValues = Arrays.stream(values).filter(v -> v < median).toArray();
+        return this.calculateMedian(firstQuartileValues);
+    }
+
+    private double calculateSecondQuartile(double[] values) {
+        return this.calculateMedian(values);
+    }
+
+    private double calculateThirdQuartile(double[] values) {
+        double median = this.calculateMedian(values);
+        double[] thirdQuartileValues = Arrays.stream(values).filter(v -> v > median).toArray();
+        return this.calculateMedian(thirdQuartileValues);
     }
 }
