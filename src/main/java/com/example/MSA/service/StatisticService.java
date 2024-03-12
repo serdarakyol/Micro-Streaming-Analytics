@@ -1,10 +1,7 @@
 package com.example.MSA.service;
 
-import java.util.List;
-
-import com.example.MSA.dto.StatisticDTO;
+import com.example.MSA.dto.StatisticDTOWithHeaders;
 
 public interface StatisticService {
-    List<StatisticDTO> getStatisticsDTOsWithDates(String startDate, String endDate);
-    List<StatisticDTO> getAllStatistics();
+    StatisticDTOWithHeaders getStatisticsDTOsWithDates(String startDate, String endDate, Integer offset, Integer limit);
 }

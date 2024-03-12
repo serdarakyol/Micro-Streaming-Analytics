@@ -4,6 +4,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.MSA.dto.StatisticDTO;
+import com.example.MSA.dto.StatisticDTOWithHeaders;
 import com.example.MSA.response.Response;
 import com.example.MSA.service.StatisticService;
 
@@ -28,18 +29,14 @@ public class StatisticController {
 
     @GetMapping
     public ResponseEntity<Response<List<StatisticDTO>>> getStatisticsBetweenDates(
-            @RequestParam(required = false) String startDate, @RequestParam(required = false) String endDate) {
-        return ResponseEntity.ok().body(Response.<List<StatisticDTO>>builder()
-                .data(statisticService.getStatisticsDTOsWithDates(startDate, endDate)).statusCode(HttpStatus.OK.value())
-                .statusMessage(HttpStatus.OK.name()).timestamp(Instant.now().toString()).build());
+            @RequestParam(required = false) String startDate, @RequestParam(required = false) String endDate,
+            @RequestParam(required = false) Integer offset, @RequestParam(required = false) Integer limit) {
+        StatisticDTOWithHeaders statisticDTOWithHeaders = statisticService.getStatisticsDTOsWithDates(startDate,
+                endDate, offset, limit);
+        Response<List<StatisticDTO>> responseBody = Response.<List<StatisticDTO>>builder()
+                .data(statisticDTOWithHeaders.statisticDTOs()).statusCode(HttpStatus.OK.value())
+                .statusMessage(HttpStatus.OK.name()).timestamp(Instant.now().toString()).build();
+        return ResponseEntity.ok().headers(statisticDTOWithHeaders.headers()).body(responseBody);
     }
-
-    @GetMapping("all")
-    public ResponseEntity<Response<List<StatisticDTO>>> getAllStatistics() {
-        return ResponseEntity.ok().body(Response.<List<StatisticDTO>>builder()
-                .data(statisticService.getAllStatistics()).statusCode(HttpStatus.OK.value())
-                .statusMessage(HttpStatus.OK.name()).timestamp(Instant.now().toString()).build());
-    }
-    
 
 }
