@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+set -e
+SOURCE="${BASH_SOURCE[0]}"
+ROOT_DIR="$(dirname "$(realpath ${SOURCE})")"
+DIST_FOLDER=${ROOT_DIR}/dist
+
+function displayUsage() {
+    echo "
+Usage: $0 <command>
+<command>:
+    help
+        Display this help message.
+"
+}
+
+function checkMaven() {
+    # Check maven if installed or not. If not install
+    if ! [ -x "$(command -v mvn --version)" ]; then
+        echo "Installing maven"
+        apt install maven
+    fi
+}
+
+function generateEnvVariable() {
+    export SPRING_DATASOURCE_URL=mongodb://test:test@localhost:27017/amplia
+    export MONGODB_AUTHENTICATION=admin
+    export MONGODB_PORT=27017
+    export MONGODB_USERNAME=test
+    export MONGODB_PASSWORD=test
+    export RABBITMQ_USERNAME=test
+    export RABBITMQ_PASSWORD=mypassword
+    export RABBITMQ_QUEUE_NAME=analytics
+    export RABBITMQ_POOLING_TIME=30000
+    export RABBITMQ_ADDRESSES=localhost
+    export MSA_HOST=http://localhost:8080/
+    info_msg "Enviroment succesfully created"
+}
+
+function error_msg () {
+    local COLOR_RED="$(tput setaf 9 2>/dev/null || :)"
+    local COLOR_RESET="$(tput sgr0 2>/dev/null || :)"
+    echo "${COLOR_RED}ERROR: "$@" ${SOURCE} line ${BASH_LINENO[0]} ${COLOR_RESET}" 1>&2;
+    exit 1
+}
+
+function info_msg () {
+    local COLOR_GREEN="$(tput setaf 10 2>/dev/null || :)"
+    local COLOR_RESET="$(tput sgr0 2>/dev/null || :)"
+    echo "${COLOR_GREEN}INFO: "$@"${COLOR_RESET}" 1>&2;
+}
+
+function buildJar() {
+    checkMaven
+    mvn clean package && info_msg "Jar file succesfully built on ${ROOT_DIR}/target/MSA-0.0.1-SNAPSHOT.jar" || error_msg "Jar file could not build"
+}
+
+function main() {
+    case "${1-notset}" in
+        help)
+            displayUsage
+            ;;
+        generate-env-variable)
+            generateEnvVariable
+            ;;
+        build-jar)
+            buildJar "${@}"
+            ;;
+        *)
+            >&2 echo "Error: Unknown command: '${1-}'"
+            >&2 displayUsage
+            exit 1
+    esac
+}
+
+main "$@"
