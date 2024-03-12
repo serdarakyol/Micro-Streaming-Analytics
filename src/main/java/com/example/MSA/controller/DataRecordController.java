@@ -31,4 +31,11 @@ public class DataRecordController {
                 .statusMessage(HttpStatus.CREATED.name()).timestamp(Instant.now().toString()).build());
     }
 
+    @PostMapping("add_queue")
+    public ResponseEntity<Response<Void>> addDataToQueue(@RequestBody DataRecordDTO dataRecordDTO) {
+        dataRecordService.addDataRecordToQueue(dataRecordDTO);
+        return ResponseEntity.ok().body(Response.<Void>builder().statusCode(HttpStatus.CREATED.value())
+                .statusMessage(HttpStatus.CREATED.name()).timestamp(Instant.now().toString()).build());
+    }
+
 }
