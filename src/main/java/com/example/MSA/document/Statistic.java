@@ -17,7 +17,7 @@ import lombok.Setter;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Document(collation = "statistics")
+@Document
 public class Statistic {
     @MongoId(value = FieldType.STRING)
     private String id;
