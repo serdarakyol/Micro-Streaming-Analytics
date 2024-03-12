@@ -1,16 +1,18 @@
 package com.example.MSA.service;
 
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 
 import com.example.MSA.document.Statistic;
-import com.example.MSA.dto.StatisticDTO;
+import com.example.MSA.dto.StatisticDTOWithHeaders;
 import com.example.MSA.mapper.StatisticMapper;
+import com.example.MSA.properties.PropertiesMSA;
 import com.example.MSA.repository.StatisticRepository;
+import com.example.MSA.utils.Filter;
+import com.example.MSA.utils.HeaderResponse;
 
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -21,29 +23,28 @@ import lombok.extern.slf4j.Slf4j;
 public class StatisticServiceImpl implements StatisticService {
 
     private StatisticRepository statisticRepository;
+    private PropertiesMSA propertiesMSA;
 
     @Override
-    public List<StatisticDTO> getStatisticsDTOsWithDates(String startDate, String endDate) {
-        Instant instantStartDate = Instant.now();
-        Instant instantEndDate = instantStartDate.minus(30, ChronoUnit.MINUTES);
-        if (startDate != null) {
-            instantStartDate = Instant.parse(startDate);
+    public StatisticDTOWithHeaders getStatisticsDTOsWithDates(String startDate, String endDate, Integer offset,
+            Integer limit) {
+        Filter filter = new Filter(startDate, endDate, offset, limit);
+        Integer totalStatistics = statisticRepository.countByCreateAtBetween(filter.getStartDate(),
+                filter.getEndDate());
+        if (totalStatistics == 0) {
+            log.warn("There is no statistics in DB");
+            return StatisticDTOWithHeaders.builder().statisticDTOs(new ArrayList<>()).build();
         }
-        if (endDate != null) {
-            instantEndDate = Instant.parse(endDate);
-        }
-        List<Statistic> statistics = statisticRepository.findByCreateAtBetween(instantStartDate, instantEndDate);
-        if (statistics.size() == 0) {
-            log.warn("There is no statistics on DB");
-            return new ArrayList<>();
-        }
-        log.info("Statistics are returned between {} and {}", instantStartDate.toString(), instantEndDate.toString());
-        return statistics.stream().map(StatisticMapper::toDTO).toList();
-    }
-
-    @Override
-    public List<StatisticDTO> getAllStatistics() {
-        return statisticRepository.findAll().stream().map(StatisticMapper::toDTO).toList();
+        List<Statistic> statistics = statisticRepository.findByCreateAtBetween(filter.getStartDate(),
+                filter.getEndDate(), filter.getPageable());
+        HeaderResponse responseHeader = new HeaderResponse(propertiesMSA.getHost());
+        HttpHeaders headersResponse = responseHeader.getHeadersResponse(filter, totalStatistics, "statistics");
+        log.info("Statistics are returned between {} and {}", filter.getStartDate().toString(),
+                filter.getEndDate().toString());
+        StatisticDTOWithHeaders a = StatisticDTOWithHeaders.builder()
+                .statisticDTOs(statistics.stream().map(StatisticMapper::toDTO).toList()).headers(headersResponse)
+                .build();
+        return a;
     }
 
 }

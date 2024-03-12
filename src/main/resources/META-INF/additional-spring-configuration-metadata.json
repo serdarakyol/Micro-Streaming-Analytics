@@ -18,5 +18,10 @@
     "name": "rabbitmq.pooling.time",
     "type": "java.lang.String",
     "description": "Pooling time in miliseconds for RabbitMQ"
+  },
+  {
+    "name": "msa.host",
+    "type": "java.lang.String",
+    "description": "The address where the API runs"
   }
 ]}
