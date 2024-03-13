@@ -10,6 +10,12 @@ Usage: $0 <command>
 <command>:
     help
         Display this help message.
+    generate-env-variable
+        Generates variables which is necessary on production
+    build-jar
+        Generates jar file
+    code-run
+        Runs docs in containers
 "
 }
 
@@ -49,22 +55,28 @@ function info_msg () {
     echo "${COLOR_GREEN}INFO: "$@"${COLOR_RESET}" 1>&2;
 }
 
+function warn_msg () {
+    local COLOR_YELLOW="$(tput setaf 3 2>/dev/null || :)"
+    local COLOR_RESET="$(tput sgr0 2>/dev/null || :)"
+    echo "${COLOR_YELLOW}WARNING: "$@"${COLOR_RESET}" 1>&2;
+}
+
 # Function to check if MongoDB is ready
 function waitMongodb() {
     until nc -z mongodb 27017; do
-        echo "Waiting for MongoDB to be ready..."
-        sleep 1
+        warn_msg "Waiting for MongoDB to be ready..."
+        sleep 5
     done
-    echo "MongoDB is ready!"
+    info_msg "MongoDB is ready!"
 }
 
 # Function to check if RabbitMQ is ready
 function waitRabbitmq() {
     until nc -z rabbitmq 5672; do
-        echo "Waiting for RabbitMQ to be ready..."
-        sleep 1
+        warn_msg "Waiting for RabbitMQ to be ready..."
+        sleep 5
     done
-    echo "RabbitMQ is ready!"
+    info_msg "RabbitMQ is ready!"
 }
 
 function buildJar() {
@@ -73,8 +85,21 @@ function buildJar() {
 }
 
 function codeRun() {
-    #generateEnvVariable
-    docker compose up
+    local URL="http://localhost:8080/statistics/health"
+    local TOTAL_TIME=0
+    local WAIT_TIME=8
+    generateEnvVariable
+    docker compose up -d
+    warn_msg "Waiting for containers to start..."
+    while true; do
+        sleep ${WAIT_TIME}
+        TOTAL_TIME=$((TOTAL_TIME + WAIT_TIME))
+        local RESPONSE=$(curl -sSL "${URL}" 2>/dev/null)
+        if [[ ${RESPONSE} == *"API is working"* ]]; then
+            break
+        fi
+    done
+    info_msg "API has started in ${TOTAL_TIME} seconds!"
 }
 
 function main() {

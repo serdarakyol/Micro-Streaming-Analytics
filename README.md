@@ -4,6 +4,6 @@ The purpose of this application is to receive messages from a queue and process 
 ## Requirements
 1. Java 21
 2. Docker and docker compose
-3. Basic knowledge of bash scripting
 
 ## Run application on Linux
+Simply execute `./msa-dev code-run` and wait for the message **'INFO: API has started in X seconds!'** to appear on the terminal.
