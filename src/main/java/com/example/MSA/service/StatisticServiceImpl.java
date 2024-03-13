@@ -8,9 +8,12 @@ import org.springframework.stereotype.Service;
 
 import com.example.MSA.document.Statistic;
 import com.example.MSA.dto.StatisticDTOWithHeaders;
+import com.example.MSA.exception.MSAException;
 import com.example.MSA.mapper.StatisticMapper;
 import com.example.MSA.properties.PropertiesMSA;
 import com.example.MSA.repository.StatisticRepository;
+import com.example.MSA.response.ResponseEnum;
+import com.example.MSA.utils.BasicSecurity;
 import com.example.MSA.utils.Filter;
 import com.example.MSA.utils.HeaderResponse;
 
@@ -26,8 +29,14 @@ public class StatisticServiceImpl implements StatisticService {
     private PropertiesMSA propertiesMSA;
 
     @Override
-    public StatisticDTOWithHeaders getStatisticsDTOsWithDates(String startDate, String endDate, Integer offset,
+    public StatisticDTOWithHeaders getStatisticsDTOsWithDates(HttpHeaders headers, String startDate, String endDate, Integer offset,
             Integer limit) {
+        if (headers.get("Authorization") == null) {
+            log.error(ResponseEnum.UNAUTHORIZED.getStatusMessage());
+            throw new MSAException(ResponseEnum.UNAUTHORIZED);
+        }
+
+        BasicSecurity.checkAuth(headers.get("Authorization").get(0));
         Filter filter = new Filter(startDate, endDate, offset, limit);
         Integer totalStatistics = statisticRepository.countByCreateAtBetween(filter.getStartDate(),
                 filter.getEndDate());
