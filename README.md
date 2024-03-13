@@ -2,8 +2,36 @@
 The purpose of this application is to receive messages from a queue and process them. Afterwards, it saves the results to MongoDB.
 
 ## Requirements
-1. Java 21
-2. Docker and docker compose
+1. **[Docker Desktop](https://www.docker.com/products/docker-desktop/)**
+2. If you are working on Windows you will need to install [WSL](https://learn.microsoft.com/en-us/windows/wsl/install).
 
-## Run application on Linux
-Simply execute `./msa-dev code-run` and wait for the message **'INFO: API has started in X seconds!'** to appear on the terminal.
+## Run services
+Simply execute `./msa-dev code-run` and wait until the message **'INFO: API has started in X seconds!'** to appear on the terminal.
+
+## Documentation of API
+To mock the queue, you are required to send a POST request to http://localhost:8080/data_records/add_queue with the following JSON payload.
+```json
+{
+  "version": "string",
+  "device": "string",
+  "path": "string",
+  "trustedBoot": "string",
+  "datastreams": [
+    {
+      "id": "string",
+      "feed": "string",
+      "datapoints": [
+        {
+          "from": 0,
+          "at": 0,
+          "value": 0
+        }
+      ]
+    }
+  ]
+}
+```
+
+The API will aggregate all requests within a 30-second timeframe. Therefore, you are encouraged to send as many POST requests as possible within this 30-second window. Subsequently, after the 30-second interval elapses, the API will compute the statistics and persist them in MongoDB. If you wish to receive statistical results, you must send a GET request to http://localhost:8080/statistics. Optionally, you can filter the statistics using parameters such as StartDate, EndDate, Offset, and Limit. StartDate and EndDate denote data created within the specified date range in MongoDB. Offset and Limit facilitate pagination.If no parameters are provided, the default behavior is to return data created in the last 30 minutes in MongoDB. The Offset will be set to 0 and the Limit to 100. If there are more than 100 records, you will need to extract the "Link" key from the response header. This variable will contain the URL for the next page.
+
+To send requests from Swagger, please click on this [Link](http://localhost:8080/swagger-ui/index.html#).
