@@ -39,4 +39,9 @@ public class StatisticController {
         return ResponseEntity.ok().headers(statisticDTOWithHeaders.headers()).body(responseBody);
     }
 
+    @GetMapping("/health")
+    public String healthCheck() {
+        return "API is working";
+    }
+
 }
