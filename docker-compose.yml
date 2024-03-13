@@ -1,27 +1,36 @@
 version: '3.8'
 
+networks:
+  streaming-analytics-net:
+    driver: bridge
+
 services:
   rabbitmq:
     image: rabbitmq:3.13.0-management
     environment:
       - RABBITMQ_DEFAULT_USER=test
       - RABBITMQ_DEFAULT_PASS=mypassword
+    networks:
+      - streaming-analytics-net
     ports:
       - "5672:5672"
       - "15672:15672"
 
   mongodb:
     image: mongo:latest
+    networks:
+      - streaming-analytics-net
     ports:
       - "27017:27017"
     environment:
       MONGO_INITDB_ROOT_USERNAME: test
       MONGO_INITDB_ROOT_PASSWORD: test
-      MONGO_INITDB_DATABASE: amplia
 
   mongo_ui:
     image: mongo-express
     container_name: mongo_ui
+    networks:
+      - streaming-analytics-net
     ports:
       - "8081:8081"
     environment:
@@ -33,3 +42,24 @@ services:
     depends_on:
       - mongodb
     command: ["sh", "-c", "sleep 10 && node app"]
+
+  micro-streaming-analytics:
+    image: 'micro-streaming-analytics:latest'
+    build:
+      context: .
+    container_name: micro-streaming-analytics
+    depends_on:
+      - mongodb
+      - rabbitmq
+    networks:
+      - streaming-analytics-net
+    ports:
+      - 8080:8080
+    environment:
+      SPRING_DATA_MONGODB_URI: mongodb://test:test@mongodb:27017/admin
+      SPRING_RABBITMQ_ADDRESSES: rabbitmq
+      SPRING_RABBITMQ_LISTENER_SIMPLE_AUTOSTARTUP: "true"
+      RABBITMQ_QUEUE_NAME: analytics
+      RABBITMQ_POOLING_TIME: "30000"
+      MSA_HOST: http://localhost:8080/
+    command: ["sh", "-c", "sleep 30 && java -jar MSA-0.0.1-SNAPSHOT.jar"]
