@@ -12,10 +12,12 @@ import lombok.AllArgsConstructor;
 
 import java.time.Instant;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 
 @RestController
 @AllArgsConstructor
@@ -25,8 +27,8 @@ public class DataRecordController {
     private DataRecordService dataRecordService;
 
     @PostMapping("add_queue")
-    public ResponseEntity<Response<Void>> addDataToQueue(@RequestBody DataRecordDTO dataRecordDTO) {
-        dataRecordService.addDataRecordToQueue(dataRecordDTO);
+    public ResponseEntity<Response<Void>> addDataRecordDTOToQueue(@RequestHeader HttpHeaders headers, @RequestBody DataRecordDTO dataRecordDTO) {
+        dataRecordService.addDataRecordToQueue(headers, dataRecordDTO);
         return ResponseEntity.ok().body(Response.<Void>builder().statusCode(HttpStatus.CREATED.value())
                 .statusMessage(HttpStatus.CREATED.name()).timestamp(Instant.now().toString()).build());
     }
