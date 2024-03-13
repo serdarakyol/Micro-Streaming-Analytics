@@ -34,4 +34,13 @@ To mock the queue, you are required to send a POST request to http://localhost:8
 
 The API will aggregate all requests within a 30-second timeframe. Therefore, you are encouraged to send as many POST requests as possible within this 30-second window. Subsequently, after the 30-second interval elapses, the API will compute the statistics and persist them in MongoDB. If you wish to receive statistical results, you must send a GET request to http://localhost:8080/statistics. Optionally, you can filter the statistics using parameters such as StartDate, EndDate, Offset, and Limit. StartDate and EndDate denote data created within the specified date range in MongoDB. Offset and Limit facilitate pagination.If no parameters are provided, the default behavior is to return data created in the last 30 minutes in MongoDB. The Offset will be set to 0 and the Limit to 100. If there are more than 100 records, you will need to extract the "Link" key from the response header. This variable will contain the URL for the next page.
 
-To send requests from Swagger, please click on this [Link](http://localhost:8080/swagger-ui/index.html#).
+
+Below, you can find an example. If all records are able to fit in a response, you will observe the following response headers.
+
+![Header response fit all records in a page](./img/no-pagination.png)
+
+Additionally, here you can find the header response when all records do not fit on a single page.
+
+![Header response does not fit all records in a page](./img/pagination.png)
+
+To send requests from Swagger, please click on this [Link](http://localhost:8080/swagger-ui/index.html#) while the API is running.

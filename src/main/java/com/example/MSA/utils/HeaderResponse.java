@@ -18,7 +18,7 @@ public class HeaderResponse {
         if (filter.getPageable().isPaged()) {
             long currentOffset = filter.getPageable().getOffset();
             int itemPerPage = filter.getPageable().getPageSize();
-            long cumulativeItemNumber = (currentOffset) + itemPerPage;
+            long cumulativeItemNumber = currentOffset + itemPerPage;
             nextItems = (currentOffset + itemPerPage < totalItems) ? currentOffset + itemPerPage : -1;
             // no need link if it's first page and fit all items in a page
             if (currentOffset == 0 && cumulativeItemNumber >= totalItems) {
@@ -29,15 +29,17 @@ public class HeaderResponse {
                 nextItems = -1;
             }
         }
-        // Create Link header
-        String linkHeader = buildLinkHeader(filter, nextItems, endpoint);
 
         // Set headers in the response
         HttpHeaders responseHeaders = new HttpHeaders();
-        responseHeaders.add("Link", linkHeader);
-        responseHeaders.add("X-Total-Count", String.valueOf(totalItems));
-        responseHeaders.add("X-Limit", String.valueOf(
-                filter.getPageable().isPaged() ? filter.getPageable().getPageSize() : String.valueOf(totalItems)));
+        if (nextItems != -1) {
+            // Create Link header
+            String linkHeader = buildLinkHeader(filter, nextItems, endpoint);
+            responseHeaders.add("Link", linkHeader);
+            responseHeaders.add("X-Total-Count", String.valueOf(totalItems));
+            responseHeaders.add("X-Limit", String.valueOf(
+                    filter.getPageable().isPaged() ? filter.getPageable().getPageSize() : String.valueOf(totalItems)));
+        }
 
         return responseHeaders;
     }
@@ -45,7 +47,8 @@ public class HeaderResponse {
     private String buildLinkHeader(Filter filter, long nextItems, String endpoint) {
         StringBuilder linkHeader = new StringBuilder();
         if (nextItems != -1) {
-            long nextOffset = filter.getPageable().getOffset() + filter.getPageable().getPageSize(); // Calculate next offset
+            long nextOffset = filter.getPageable().getOffset() + filter.getPageable().getPageSize(); // Calculate next
+                                                                                                     // offset
             String nextPageUrl = this.buildNextPageUrl(filter, endpoint, nextOffset);
             linkHeader.append("<").append(nextPageUrl).append(">; rel=\"next\"");
         }
@@ -66,4 +69,3 @@ public class HeaderResponse {
         return sb.toString();
     }
 }
-

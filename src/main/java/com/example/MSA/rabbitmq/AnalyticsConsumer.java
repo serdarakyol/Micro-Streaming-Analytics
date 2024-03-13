@@ -117,7 +117,7 @@ public class AnalyticsConsumer {
 
     private double calculateFirstQuartile(double[] values) {
         double median = this.calculateMedian(values);
-        double[] firstQuartileValues = Arrays.stream(values).filter(v -> v < median).toArray();
+        double[] firstQuartileValues = Arrays.stream(values).filter(v -> v <= median).toArray();
         return this.calculateMedian(firstQuartileValues);
     }
 
@@ -127,7 +127,7 @@ public class AnalyticsConsumer {
 
     private double calculateThirdQuartile(double[] values) {
         double median = this.calculateMedian(values);
-        double[] thirdQuartileValues = Arrays.stream(values).filter(v -> v > median).toArray();
+        double[] thirdQuartileValues = Arrays.stream(values).filter(v -> v >= median).toArray();
         return this.calculateMedian(thirdQuartileValues);
     }
 }
