@@ -64,12 +64,12 @@ public class AnalyticsConsumer {
     }
 
     private void calculateStatistics() {
+        if (dataRecordBatch.size() == 0) {
+            return;
+        }
         double[] values = dataRecordBatch.stream().flatMap(dr -> dr.datastreams().stream())
                 .flatMap(ds -> ds.datapoints().stream()).mapToDouble(dp -> dp.value()).toArray();
         Arrays.parallelSort(values);
-        if (values.length == 0) {
-            return;
-        }
         Statistic statistics = Statistic.builder().average(calculateAverage(values)).max(findMax(values))
                 .min(findMin(values)).median(calculateMedian(values)).mode(calculateMode(values))
                 .standardDeviation(calculateStandardDeviation(values)).firstQuartile(calculateFirstQuartile(values))
