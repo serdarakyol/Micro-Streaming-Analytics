@@ -32,9 +32,11 @@ public class Filter {
             this.pageable = new Pagination(limit, offset, sort);
         } else if (offset != null && limit == null) {
             this.limit = 100;
+            this.offset = offset;
             this.pageable = new Pagination(this.limit, offset, sort);
         } else if (offset == null && limit != null) {
             this.offset = 0;
+            this.limit = limit;
             limit = limit > 1000 ? 1000 : limit;
             this.pageable = new Pagination(limit, this.offset, sort);
         } else {
