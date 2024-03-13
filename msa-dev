@@ -49,9 +49,32 @@ function info_msg () {
     echo "${COLOR_GREEN}INFO: "$@"${COLOR_RESET}" 1>&2;
 }
 
+# Function to check if MongoDB is ready
+function waitMongodb() {
+    until nc -z mongodb 27017; do
+        echo "Waiting for MongoDB to be ready..."
+        sleep 1
+    done
+    echo "MongoDB is ready!"
+}
+
+# Function to check if RabbitMQ is ready
+function waitRabbitmq() {
+    until nc -z rabbitmq 5672; do
+        echo "Waiting for RabbitMQ to be ready..."
+        sleep 1
+    done
+    echo "RabbitMQ is ready!"
+}
+
 function buildJar() {
     checkMaven
     mvn clean package && info_msg "Jar file succesfully built on ${ROOT_DIR}/target/MSA-0.0.1-SNAPSHOT.jar" || error_msg "Jar file could not build"
+}
+
+function codeRun() {
+    #generateEnvVariable
+    docker compose up
 }
 
 function main() {
@@ -64,6 +87,15 @@ function main() {
             ;;
         build-jar)
             buildJar "${@}"
+            ;;
+        code-run)
+            codeRun "${@}"
+            ;;
+        wait-mongodb)
+            waitMongodb "${@}"
+            ;;
+        wait-rabbitmq)
+            waitRabbitmq "${@}"
             ;;
         *)
             >&2 echo "Error: Unknown command: '${1-}'"
