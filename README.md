@@ -6,7 +6,7 @@ The purpose of this application is to receive messages from a queue and process 
 2. If you are working on Windows you will need to install [WSL](https://learn.microsoft.com/en-us/windows/wsl/install).
 
 ## Run services
-Simply execute `./msa-dev code-run` and wait until the message **'INFO: API has started in X seconds!'** to appear on the terminal.
+Please proceed to the directory of the repository and execute the command `./msa-dev code-run`. Kindly remain patient until the message **'INFO: API has started in X seconds!'** is displayed on the terminal.
 
 ## Documentation of API
 
