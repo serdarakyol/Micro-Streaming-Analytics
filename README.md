@@ -9,6 +9,13 @@ The purpose of this application is to receive messages from a queue and process 
 Simply execute `./msa-dev code-run` and wait until the message **'INFO: API has started in X seconds!'** to appear on the terminal.
 
 ## Documentation of API
+
+Before sending any requests, authorization is required. To obtain authorization, you must include the token "d05f06b5-61bc-4fc2-9aca-6adde3cacc56" in the headers. To do this, navigate to http://localhost:8080/swagger-ui/index.html and locate the "Authorize" button in the upper right corner. Paste the token into the provided window and then click the "Authorize" button.
+
+Certainly, you can follow the instructions provided in the images below.
+![Auth button location](./img/auth-button-location.png)
+![Authorize](./img/authorize.png)
+
 To mock the queue, you are required to send a POST request to http://localhost:8080/data_records/add_queue with the following JSON payload.
 ```json
 {
