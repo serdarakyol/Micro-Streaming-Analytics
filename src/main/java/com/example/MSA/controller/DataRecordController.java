@@ -20,16 +20,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RestController
 @AllArgsConstructor
 @RequestMapping("/data_records")
-@Tag(name = "Data Records", description = "This module saves new record to MongoDB")
+@Tag(name = "Data Records", description = "Mock queues with that endpoint")
 public class DataRecordController {
     private DataRecordService dataRecordService;
-
-    @PostMapping
-    public ResponseEntity<Response<Void>> saveDataRecord(@RequestBody DataRecordDTO dataRecordDTO) {
-        dataRecordService.saveDataRecord(dataRecordDTO);
-        return ResponseEntity.ok().body(Response.<Void>builder().statusCode(HttpStatus.CREATED.value())
-                .statusMessage(HttpStatus.CREATED.name()).timestamp(Instant.now().toString()).build());
-    }
 
     @PostMapping("add_queue")
     public ResponseEntity<Response<Void>> addDataToQueue(@RequestBody DataRecordDTO dataRecordDTO) {
